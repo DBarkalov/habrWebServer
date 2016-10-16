@@ -1,0 +1,47 @@
+group 'habrServer'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'com.bmuschko.docker-java-application'
+apply plugin: 'com.bmuschko.docker-remote-api'
+
+import com.bmuschko.gradle.docker.tasks.container.DockerCreateContainer
+
+mainClassName = 'ru.test.HabrWebServer'
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.bmuschko:gradle-docker-plugin:3.0.3'
+    }
+}
+
+docker {
+    url = 'http://127.0.0.1:2375'
+    javaApplication {
+        maintainer = 'Dmitry Barkalov "xxx@xxx.xxx"'
+        ports = [8080]
+        tag = 'habrwebserver'
+    }
+}
+
+task createDocker(type: DockerCreateContainer) {
+    dependsOn dockerBuildImage
+    targetImageId { dockerBuildImage.getImageId() }
+    portBindings = ['8080:8080']
+}
+
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+    compile group: 'org.glassfish.grizzly', name: 'grizzly-http-server', version: '2.3.28'
+}
